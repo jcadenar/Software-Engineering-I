@@ -9,3 +9,4 @@ This repository contains the main material of the course Software Engineering I 
 
 - [@jcadenar](https://www.github.com/jcadenar)
 - [@RoierOc](https://github.com/RoierOc)
+- [@mabecerrap](https://github.com/mabecerrap)

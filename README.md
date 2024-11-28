@@ -1,6 +1,6 @@
 # Software Engineering I
 
-This repository contains the main material of the course Software Engineering I of the National University of Colombia. The repository is divided in the main files, ´Documentos´, ´Proyecto´, 'Asignaciones' in addition to README.md and .gitignore files. 
+This repository contains the main material of the course Software Engineering I of the National University of Colombia. The repository is divided in the main files, ´Documentación´, ´Proyecto´, 'Asignaciones' in addition to README.md and .gitignore files. 
 
 
 

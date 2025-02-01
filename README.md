@@ -16,3 +16,4 @@ El objetivo de este proyecto es desarrollar una plataforma web interactiva que p
     2. TypeScript
 - **Servicios externos:**
     1. PostgreSQL
+    2. Firebase

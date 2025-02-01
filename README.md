@@ -1,4 +1,4 @@
-# Repositorio grupal - Ingeniería de software I - 2024-2
+# Repositorio grupal - Ingeniería de Software I - 2024-2
 ## Autores:
 - [**Julian Esteban Cadena Rojas**](https://www.github.com/jcadenar)
 - [**Roger Fabián Bonilla Caro**](https://github.com/RoierOc)

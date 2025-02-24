@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Principal</title>
+</head>
+<body>
+
+    <h2>Game code</h2>
+    <input type="text" id="codeInput">
+    <button id="createGame">Create game</button>
+    <button id="joinGame">Join game</button>
+    <button id="playAI">Play vs Stockfish</button>
+    <button id="searchGame">Buscar partida</button>
+    <p id="searchStatus"></p>
+    <div style="color: red" id="errorMessage"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        $('#createGame').on('click', function() {
+            window.location.replace('/white?code=' + $('#codeInput').val());
+        });
+        $('#joinGame').on('click', function() {
+            window.location.replace('/black?code=' + $('#codeInput').val());
+        });
+        $('#playAI').on('click', function() {
+            window.location.href = '/public/IA.html';
+        });
+
+        document.getElementById('searchGame').addEventListener('click', function() {
+            socket.emit('buscarPartida');
+            document.getElementById('searchStatus').innerText = "Buscando oponente...";
+        });
+
+        socket.on('partidaEncontrada', function(data) {
+            window.location.href = '/' + data.color + '?code=' + data.code;
+        });
+
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') == 'invalidCode') {
+            $('#errorMessage').text('Invalid invite code');
+        }
+    </script>
+
+</body>
+</html>

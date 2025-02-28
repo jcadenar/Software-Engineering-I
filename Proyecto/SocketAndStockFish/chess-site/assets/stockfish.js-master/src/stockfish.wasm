@@ -1,1 +1,3 @@
-./stockfish-16.1.wasm
+version https://git-lfs.github.com/spec/v1
+oid sha256:7ded2cf268da116d48dc85b7db6ff7fe9702e538ef2f9f08a4817f2bcddba0cf
+size 21

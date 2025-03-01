@@ -21,14 +21,20 @@
     <script>
         const socket = io();
 
-        $('#createGame').on('click', function() {
-            window.location.replace('/white?code=' + $('#codeInput').val());
-        });
+       
         $('#joinGame').on('click', function() {
             window.location.replace('/black?code=' + $('#codeInput').val());
         });
         $('#playAI').on('click', function() {
             window.location.href = '/public/IA.html';
+        });
+
+        document.getElementById('createGame').addEventListener('click', function() {
+        socket.emit('createGame');
+        });
+
+        socket.on('gameCreated', function(data) {
+            window.location.href = '/white?code=' + data.code;
         });
 
         document.getElementById('searchGame').addEventListener('click', function() {

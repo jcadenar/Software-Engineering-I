@@ -6,18 +6,43 @@ module.exports = io => {
 
         let currentCode = null;
 
+        function generateGameCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase(); // Código de 6 caracteres alfanuméricos
+        }
+
         socket.on('move', function(move) {
+            console.log('move detected');
             io.to(currentCode).emit('newMove', move);
         });
-        
+
+        socket.on('createGame', function() {
+            let gameCode = generateGameCode();
+            currentCode = gameCode;
+            socket.join(gameCode);
+            games[gameCode] = true;
+
+            socket.emit('gameCreated', { code: gameCode });
+        });
+
         socket.on('joinGame', function(data) {
             currentCode = data.code;
             socket.join(currentCode);
+
             if (!games[currentCode]) {
                 games[currentCode] = true;
                 return;
             }
+            
             io.to(currentCode).emit('startGame');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('socket disconnected');
+
+            if (currentCode) {
+                io.to(currentCode).emit('gameOverDisconnect');
+                delete games[currentCode];
+            }
         });
 
         // Manejo de la cola de emparejamiento
@@ -48,18 +73,5 @@ module.exports = io => {
             }
         });
 
-        socket.on('disconnect', function() {
-            console.log('socket disconnected');
-
-            // Si el jugador desconectado estaba en la cola de espera, lo eliminamos
-            if (waitingPlayer === socket) {
-                waitingPlayer = null;
-            }
-
-            if (currentCode) {
-                io.to(currentCode).emit('gameOverDisconnect');
-                delete games[currentCode];
-            }
-        });
     });
 };

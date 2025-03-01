@@ -25,6 +25,7 @@ body{
   border-radius: 12px;
 }
 
+
 h1{
   font-size: 36px;
   text-align: center;
@@ -128,6 +129,22 @@ h1{
   text-decoration: underline;
 }
 
+.login-link{
+  font-size: 14.5px;
+  text-align: center;
+  margin: 20px 0 15px;
+}
+
+.login-link p a{
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-link p a:hover{
+  text-decoration: underline;
+}
+
 .separator {
   display: flex;
   align-items: center;
@@ -141,4 +158,12 @@ h1{
   flex-grow: 1; /* Hace que las líneas se expandan */
   border: none;
   border-top: 1px solid #ccc;
+}
+
+.error-message {
+  color: rgb(255, 255, 255);
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
 }

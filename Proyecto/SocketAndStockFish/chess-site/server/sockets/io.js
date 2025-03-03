@@ -73,5 +73,17 @@ module.exports = io => {
             }
         });
 
+        // NUEVO: Manejo de mensajes de chat
+        socket.on('chat-message', function(data) {
+            console.log('Chat message received:', data.message);
+            
+            // Si tenemos un código de juego válido, enviamos el mensaje a todos en esa sala excepto al remitente
+            if (data.gameCode && games[data.gameCode]) {
+                socket.to(data.gameCode).emit('chat-message', {
+                    message: data.message,
+                    color: data.color
+                });
+            }
+        });
     });
 };

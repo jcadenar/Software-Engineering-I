@@ -1,20 +1,241 @@
 <html>
     <head>
         {{> head}}
+        <style>
+            .game-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .board-container {
+                flex: 1;
+                min-width: 600px;
+                margin-right: 20px;
+            }
+            
+            .chat-container {
+                flex: 0 0 300px;
+                display: flex;
+                flex-direction: column;
+                height: 500px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+            }
+            
+            .chat-header {
+                padding: 10px;
+                background-color: #313941;
+                color: white;
+                border-radius: 5px 5px 0 0;
+                font-weight: bold;
+                text-align: center;
+            }
+            
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 10px;
+                background-color: #fff;
+            }
+            
+            .message {
+                margin-bottom: 10px;
+                padding: 8px 12px;
+                border-radius: 15px;
+                max-width: 80%;
+                word-wrap: break-word;
+            }
+            
+            .own-message {
+                background-color: #0084ff;
+                color: white;
+                margin-left: auto;
+            }
+            
+            .opponent-message {
+                background-color: #e4e6eb;
+            }
+            
+            .system-message {
+                background-color: #f1f1f1;
+                font-style: italic;
+                text-align: center;
+                padding: 5px;
+                margin: 5px 0;
+                border-radius: 5px;
+                font-size: 0.9em;
+            }
+            
+            .message-sender {
+                font-weight: bold;
+                font-size: 0.8em;
+                margin-bottom: 3px;
+            }
+            
+            .chat-input-container {
+                display: flex;
+                padding: 10px;
+                border-top: 1px solid #ccc;
+            }
+            
+            #message-input {
+                flex: 1;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 20px;
+                outline: none;
+            }
+            
+            #send-button {
+                margin-left: 10px;
+                padding: 8px 15px;
+                background-color: #313941;
+                color: white;
+                border: none;
+                border-radius: 20px;
+                cursor: pointer;
+            }
+            
+            #send-button:hover {
+                background-color: #444f5a;
+            }
+            
+            @media (max-width: 950px) {
+                .game-container {
+                    flex-direction: column;
+                }
+                
+                .board-container {
+                    margin-right: 0;
+                    margin-bottom: 20px;
+                }
+                
+                .chat-container {
+                    height: 300px;
+                }
+            }
+        </style>
     </head>
     <body>
-
-        <div id="myBoard" style="width: 600px"></div>
-        <label>Status:</label>
-        <div id="status"></div>
-        <label>PGN:</label>
-        <div id="pgn"></div>
+        <div class="game-container">
+            <div class="board-container">
+                <div id="myBoard" style="width: 600px"></div>
+                <label>Status:</label>
+                <div id="status"></div>
+                <label>PGN:</label>
+                <div id="pgn"></div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-header">Chat en vivo</div>
+                <div id="chat-messages" class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="message-input" placeholder="Escribe un mensaje..." autocomplete="off">
+                    <button id="send-button">Enviar</button>
+                </div>
+            </div>
+        </div>
 
         <script>
             let playerColor = '{{color}}';
             console.log('Playing as ' + playerColor);
+            
+            // Chat functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const messageInput = document.getElementById('message-input');
+                const sendButton = document.getElementById('send-button');
+                const chatMessages = document.getElementById('chat-messages');
+                
+                // Socket ya está disponible desde index.js
+                
+                // Añadir mensaje al chat
+                function addMessage(message, type, sender = '') {
+                    const messageElement = document.createElement('div');
+                    
+                    if (type === 'system') {
+                        messageElement.classList.add('system-message');
+                        messageElement.textContent = message;
+                    } else {
+                        messageElement.classList.add('message');
+                        messageElement.classList.add(type === 'own' ? 'own-message' : 'opponent-message');
+                        
+                        if (sender) {
+                            const senderElement = document.createElement('div');
+                            senderElement.classList.add('message-sender');
+                            senderElement.textContent = sender;
+                            messageElement.appendChild(senderElement);
+                        }
+                        
+                        const textElement = document.createElement('div');
+                        textElement.textContent = message;
+                        messageElement.appendChild(textElement);
+                    }
+                    
+                    chatMessages.appendChild(messageElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+                
+                // Enviar mensaje
+                function sendMessage() {
+                    const message = messageInput.value.trim();
+                    if (message) {
+                        // Obtener el código de la partida de la URL
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const gameCode = urlParams.get('code');
+                        
+                        // Emitir mensaje al servidor
+                        socket.emit('chat-message', {
+                            message: message,
+                            gameCode: gameCode,
+                            color: playerColor
+                        });
+                        
+                        // Mostrar mensaje propio
+                        addMessage(message, 'own', 'Tú');
+                        
+                        // Limpiar campo de entrada
+                        messageInput.value = '';
+                    }
+                }
+                
+                // Event listeners
+                sendButton.addEventListener('click', sendMessage);
+                messageInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+                
+                // Recibir mensaje
+                socket.on('chat-message', function(data) {
+                    const senderName = data.color === 'white' ? 'Blancas' : 'Negras';
+                    addMessage(data.message, 'opponent', senderName);
+                });
+                
+                // Mensaje de sistema cuando comienza el juego
+                addMessage('Partida iniciada. ¡Buena suerte!', 'system');
+                
+                // Mensaje cuando un jugador se une
+                socket.on('player-joined', function() {
+                    addMessage('Tu oponente se ha conectado', 'system');
+                });
+                
+                // Mensaje cuando se desconecta un jugador
+                socket.on('gameOverDisconnect', function() {
+                    addMessage('Tu oponente se ha desconectado', 'system');
+                });
+                
+                // Mensaje cuando se hace un movimiento
+                socket.on('newMove', function(move) {
+                    const moveSAN = `${move.from}-${move.to}`;
+                    addMessage(`Movimiento: ${moveSAN}`, 'system');
+                });
+            });
         </script>
         <script src="/public/js/index.js"></script>
-
     </body>
 </html>

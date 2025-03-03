@@ -1,181 +1,282 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Principal</title>
-    
-    <!-- React y Babel -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
-    
-    <!-- Socket.io -->
-    <script src="/socket.io/socket.io.js"></script>
+<!-- Socket.io (debe ir antes que nuestro script) -->
+<script src="/socket.io/socket.io.js"></script>
 
-    <!-- Fuentes de Google -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Estilos CSS -->
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
-    <!-- Estilos CSS -->
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-image: url('https://images.unsplash.com/photo-1529699211952-734e80c4d42b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); /* Imagen de fondo de ajedrez */
-            background-size: cover;
-            background-position: center;
-        }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        #root {
-            background-color: rgba(42, 42, 42, 0.9); /* Fondo semi-transparente */
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-        }
+    body {
+        font-family: 'Inter', sans-serif;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background: linear-gradient(to bottom, #1c50c0, #1b51c5, #2144b6, #ff8c00);
+    }
 
-        h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
-            color: #f0f0f0;
-        }
+    .galaxy-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
 
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid #444;
-            border-radius: 5px;
-            background-color: #333;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-        }
+    .star {
+        position: absolute;
+        background: white;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        opacity: 0.8;
+        transition: transform 0.1s, width 0.1s, height 0.1s;
+    }
 
-        input:focus {
-            border-color: #007bff;
-        }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .title-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+    .title {
+        font-size: 3rem;
+        text-align: center;
+        margin-right: 1rem;
+        font-family: 'Great Vibes', cursive;
+    }
 
-        button img {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-        }
+    .logo {
+        width: 200px;
+        height: auto;
+    }
 
-        #searchStatus {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: #ccc;
-        }
+    .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
 
-        .text-red-500 {
-            color: #ff4444;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+    .buttons-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 2rem;
+    }
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const socket = io(); // Asegurar que socket.io está disponible globalmente
+    .column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 1rem;
+    }
 
-        function GameLobby() {
-            const [code, setCode] = useState("");
-            const [searchStatus, setSearchStatus] = useState("");
-            const [errorMessage, setErrorMessage] = useState("");
+    .board-container {
+        margin-top: 2rem;
+    }
 
-            useEffect(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get("error") === "invalidCode") {
-                    setErrorMessage("Invalid invite code");
-                }
+    .board-container img {
+        width: 500px;
+        height: auto;
+        border: 5px solid #003366;
+        border-radius: 10px;
+    }
 
-                socket.on("gameCreated", (data) => {
-                    window.location.href = `/white?code=${data.code}`;
-                });
+    .button {
+        width: 300px;
+        padding: 2rem;
+        margin-bottom: 0.75rem;
+        border: none;
+        border-radius: 100px;
+        background-color: #313941;
+        color: #fff;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
 
-                socket.on("partidaEncontrada", (data) => {
-                    window.location.href = `/${data.color}?code=${data.code}`;
-                });
+    .button:hover {
+        background-color: #ff8c00;
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(9, 77, 145, 0.5);
+    }
 
-                return () => {
-                    socket.off("gameCreated");
-                    socket.off("partidaEncontrada");
-                };
-            }, []);
+    .button img {
+        width: 25px;
+        height: 25px;
+        margin-right: 10px;
+    }
 
-            return (
-                <div>
-                    <h2>Game Code</h2>
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    #searchStatus {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+
+    .text-red-500 {
+        color: #ff4444;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+</style>
+</head> <body> <div class="galaxy-background" id="galaxy-background"></div>
+    <div class="container">
+        <div class="title-container">
+            <div class="title">Bienvenido al Juego de Ajedrez</div>
+            <img src="/public/anexos/logoFinal.png" alt="Logo" class="logo">
+        </div>
+        <div class="content">
+            <div class="buttons-container">
+                <div class="column">
+                    <div class="section-title">Juega con un amigo</div>
                     <input 
                         type="text" 
-                        value={code} 
-                        onChange={(e) => setCode(e.target.value)}
                         id="codeInput"
                         placeholder="Enter game code"
+                        style="width: 300px; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 5px; border: 1px solid #444; background-color: #333; color: #fff; text-align: center; font-size: 1.2rem;"
                     />
-                    <button onClick={() => socket.emit("createGame")} id="createGame">
+                    <button class="button" id="createGame">
                         <img src="https://img.icons8.com/ios-filled/50/ffffff/chessboard.png" alt="Create Game" />
                         Create Game
                     </button>
-                    <button onClick={() => (window.location.href = `/black?code=${code}`)} id="joinGame">
-                        <img src="https://img.icons8.com/ios-filled/50/000000/pawn.png" alt="Join Game" />
+                    <button class="button" id="joinGame">
+                        <img src="https://img.icons8.com/ios-filled/50/ffffff/pawn.png" alt="Join Game" />
                         Join Game
                     </button>
-                    <button onClick={() => (window.location.href = "/public/IA.html")} id="playAI">
-                        <img src="https://img.icons8.com/ios-filled/50/ffffff/robot.png" alt="Play vs AI" />
-                        Play vs Stockfish
-                    </button>
-                    <button 
-                        onClick={() => {
-                            socket.emit("buscarPartida");
-                            setSearchStatus("Buscando oponente...");
-                        }} 
-                        id="searchGame"
-                    >
+                </div>
+                <div class="board-container">
+                    <img src="/public/anexos/board.png" alt="Chess Board">
+                </div>
+                <div class="column">
+                    <div class="section-title">Juega en línea o practíca</div>
+                    <button class="button" id="searchGame">
                         <img src="https://img.icons8.com/ios-filled/50/ffffff/search.png" alt="Search Game" />
                         Buscar Partida
                     </button>
-                    <p id="searchStatus">{searchStatus}</p>
-                    <div id="errorMessage" className="text-red-500">
-                        {errorMessage}
-                    </div>
+                    <button class="button" id="playAI">
+                        <img src="https://img.icons8.com/ios-filled/50/ffffff/robot.png" alt="Play vs AI" />
+                        Play vs Stockfish
+                    </button>
+                    <p id="searchStatus"></p>
+                    <div id="errorMessage" class="text-red-500"></div>
                 </div>
-            );
-        }
-
-        ReactDOM.createRoot(document.getElementById("root")).render(<GameLobby />);
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Inicializar Socket.io
+        const socket = io();
+    
+        // Escuchar eventos del servidor
+        socket.on("gameCreated", function(data) {
+            console.log("Juego creado:", data);
+            window.location.href = `/white?code=${data.code}`;
+        });
+    
+        socket.on("partidaEncontrada", function(data) {
+            console.log("Partida encontrada:", data);
+            window.location.href = `/${data.color}?code=${data.code}`;
+        });
+    
+        // Event listeners para los botones
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM cargado");
+            
+            // Obtener referencias a los elementos del DOM
+            const createGameBtn = document.getElementById('createGame');
+            const joinGameBtn = document.getElementById('joinGame');
+            const searchGameBtn = document.getElementById('searchGame');
+            const playAIBtn = document.getElementById('playAI');
+            const codeInput = document.getElementById('codeInput');
+            const searchStatus = document.getElementById('searchStatus');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Verificar si hay un error en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("error") === "invalidCode") {
+                errorMessage.innerText = "Código de invitación inválido";
+            }
+            
+            // Agregar event listeners a los botones
+            createGameBtn.addEventListener('click', function() {
+                console.log("Creando juego...");
+                socket.emit("createGame");
+            });
+            
+            joinGameBtn.addEventListener('click', function() {
+                const code = codeInput.value.trim();
+                console.log("Uniendo al juego:", code);
+                if (code) {
+                    window.location.href = `/black?code=${code}`;
+                } else {
+                    errorMessage.innerText = "Por favor ingresa un código";
+                }
+            });
+            
+            searchGameBtn.addEventListener('click', function() {
+                console.log("Buscando partida...");
+                socket.emit("buscarPartida");
+                searchStatus.innerText = "Buscando oponente...";
+            });
+            
+            playAIBtn.addEventListener('click', function() {
+                console.log("Jugando contra IA...");
+                window.location.href = "/public/IA.html";
+            });
+            
+            // Crear estrellas para el fondo
+            const galaxy = document.getElementById('galaxy-background');
+            for (let i = 0; i < 150; i++) {
+                let star = document.createElement("div");
+                star.classList.add("star");
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.opacity = Math.random();
+                galaxy.appendChild(star);
+            }
+            
+            // Efecto de movimiento de estrellas
+            document.addEventListener("mousemove", function(event) {
+                const stars = document.querySelectorAll(".star");
+                stars.forEach(star => {
+                    let moveX = (event.clientX / window.innerWidth - 0.5) * 20;
+                    let moveY = (event.clientY / window.innerHeight - 0.5) * 20;
+                    star.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                    star.style.width = `${4 + Math.abs(moveX) / 10}px`;
+                    star.style.height = `${4 + Math.abs(moveY) / 10}px`;
+                });
+            });
+        });
     </script>
-</body>
-</html>

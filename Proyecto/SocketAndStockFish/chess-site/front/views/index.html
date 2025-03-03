@@ -4,53 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Principal</title>
+    
+    <!-- React y Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+    
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Fuentes de Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Estilos CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://images.unsplash.com/photo-1529699211952-734e80c4d42b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); /* Imagen de fondo de ajedrez */
+            background-size: cover;
+            background-position: center;
+        }
+
+        #root {
+            background-color: rgba(42, 42, 42, 0.9); /* Fondo semi-transparente */
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: #f0f0f0;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        #searchStatus {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .text-red-500 {
+            color: #ff4444;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <h2>Game code</h2>
-    <input type="text" id="codeInput">
-    <button id="createGame">Create game</button>
-    <button id="joinGame">Join game</button>
-    <button id="playAI">Play vs Stockfish</button>
-    <button id="searchGame">Buscar partida</button>
-    <p id="searchStatus"></p>
-    <div style="color: red" id="errorMessage"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const socket = io(); // Asegurar que socket.io está disponible globalmente
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
+        function GameLobby() {
+            const [code, setCode] = useState("");
+            const [searchStatus, setSearchStatus] = useState("");
+            const [errorMessage, setErrorMessage] = useState("");
 
-       
-        $('#joinGame').on('click', function() {
-            window.location.replace('/black?code=' + $('#codeInput').val());
-        });
-        $('#playAI').on('click', function() {
-            window.location.href = '/public/IA.html';
-        });
+            useEffect(() => {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get("error") === "invalidCode") {
+                    setErrorMessage("Invalid invite code");
+                }
 
-        document.getElementById('createGame').addEventListener('click', function() {
-        socket.emit('createGame');
-        });
+                socket.on("gameCreated", (data) => {
+                    window.location.href = `/white?code=${data.code}`;
+                });
 
-        socket.on('gameCreated', function(data) {
-            window.location.href = '/white?code=' + data.code;
-        });
+                socket.on("partidaEncontrada", (data) => {
+                    window.location.href = `/${data.color}?code=${data.code}`;
+                });
 
-        document.getElementById('searchGame').addEventListener('click', function() {
-            socket.emit('buscarPartida');
-            document.getElementById('searchStatus').innerText = "Buscando oponente...";
-        });
+                return () => {
+                    socket.off("gameCreated");
+                    socket.off("partidaEncontrada");
+                };
+            }, []);
 
-        socket.on('partidaEncontrada', function(data) {
-            window.location.href = '/' + data.color + '?code=' + data.code;
-        });
-
-        var urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('error') == 'invalidCode') {
-            $('#errorMessage').text('Invalid invite code');
+            return (
+                <div>
+                    <h2>Game Code</h2>
+                    <input 
+                        type="text" 
+                        value={code} 
+                        onChange={(e) => setCode(e.target.value)}
+                        id="codeInput"
+                        placeholder="Enter game code"
+                    />
+                    <button onClick={() => socket.emit("createGame")} id="createGame">
+                        <img src="https://img.icons8.com/ios-filled/50/ffffff/chessboard.png" alt="Create Game" />
+                        Create Game
+                    </button>
+                    <button onClick={() => (window.location.href = `/black?code=${code}`)} id="joinGame">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/pawn.png" alt="Join Game" />
+                        Join Game
+                    </button>
+                    <button onClick={() => (window.location.href = "/public/IA.html")} id="playAI">
+                        <img src="https://img.icons8.com/ios-filled/50/ffffff/robot.png" alt="Play vs AI" />
+                        Play vs Stockfish
+                    </button>
+                    <button 
+                        onClick={() => {
+                            socket.emit("buscarPartida");
+                            setSearchStatus("Buscando oponente...");
+                        }} 
+                        id="searchGame"
+                    >
+                        <img src="https://img.icons8.com/ios-filled/50/ffffff/search.png" alt="Search Game" />
+                        Buscar Partida
+                    </button>
+                    <p id="searchStatus">{searchStatus}</p>
+                    <div id="errorMessage" className="text-red-500">
+                        {errorMessage}
+                    </div>
+                </div>
+            );
         }
-    </script>
 
+        ReactDOM.createRoot(document.getElementById("root")).render(<GameLobby />);
+    </script>
 </body>
 </html>

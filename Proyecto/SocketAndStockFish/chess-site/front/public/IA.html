@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -209,7 +210,7 @@
             color: #f0f0f0;
         }
 
-        /* Add these new styles to your existing style block */
+        /* Header link styles */
         .header-link {
             display: flex;
             align-items: center;
@@ -225,6 +226,192 @@
         .header:hover {
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
+
+        /* Legal move indicator dot */
+        .legal-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: rgba(34, 78, 161, 0.7);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            color: #f0f0f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.4s ease-out;
+            position: relative;
+        }
+
+        .modal h2 {
+            text-align: center;
+            font-size: 28px;
+            margin-top: 0;
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .option-section {
+            margin: 25px 0;
+        }
+
+        .option-section h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #f0f0f0;
+        }
+
+        /* Difficulty slider */
+        .difficulty-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #22223b, #4CAF50);
+            border-radius: 4px;
+            outline: none;
+            flex-grow: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .difficulty-value {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .difficulty-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-top: 5px;
+        }
+
+        /* Color selection */
+        .color-options {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .color-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .color-option input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .color-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .color-box img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .color-box.white {
+            background-color: #f0f0f0;
+        }
+
+        .color-box.black {
+            background-color: #222;
+        }
+
+        .color-option input:checked + .color-box {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+            border: 2px solid #4CAF50;
+        }
+
+        .color-option span {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Modal buttons */
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .modal-buttons button {
+            margin: 0;
+            min-width: 140px;
+        }
+
+        #start-game-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        #cancel-game-btn {
+            background: linear-gradient(135deg, #e53935, #c62828);
+        }
     </style>
 </head>
 
@@ -232,7 +419,7 @@
     <!-- Encabezado -->
     <div class="header">
         <a href="http://localhost:3037" class="header-link">
-            <img src="/public/anexos/logoFinal.png" alt="Logo de la app">
+            <img src="/public/Anexos/logoFinal.png" alt="Logo de la app">
             <h1>SuperChess 64</h1>
         </a>
     </div>
@@ -255,20 +442,122 @@
 
     <!-- Mensaje del robot -->
     <div class="robot-message">
-        <img src="anexos/robot.png" alt="Robot">
+        <img src="/public/Anexos/robot.png" alt="Robot">
         <p>¡Buena suerte!</p>
+    </div>
+
+    <!-- Modal de opciones de juego -->
+    <div id="game-options-modal" class="modal">
+        <div class="modal-content">
+            <h2>Configuración de la partida</h2>
+            
+            <div class="option-section">
+                <h3>Dificultad</h3>
+                <div class="difficulty-container">
+                    <input type="range" id="difficulty-slider" min="1" max="20" value="10" class="slider">
+                    <div class="difficulty-value">
+                        <span id="difficulty-display">10</span>
+                    </div>
+                </div>
+                <div class="difficulty-labels">
+                    <span>Principiante</span>
+                    <span>Intermedio</span>
+                    <span>Avanzado</span>
+                </div>
+            </div>
+            
+            <div class="option-section">
+                <h3>Elige tu color</h3>
+                <div class="color-options">
+                    <label class="color-option">
+                        <input type="radio" name="piece-color" value="w" checked>
+                        <div class="color-box white">
+                            <img src="/public/img/chesspieces/wikipedia/wK.png" alt="Rey blanco">
+                        </div>
+                        <span>Blancas</span>
+                    </label>
+                    <label class="color-option">
+                        <input type="radio" name="piece-color" value="b">
+                        <div class="color-box black">
+                            <img src="/public/img/chesspieces/wikipedia/bK.png" alt="Rey negro">
+                        </div>
+                        <span>Negras</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="start-game-btn">Comenzar partida</button>
+                <button id="cancel-game-btn">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="/public/js/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="/chess-site/assets/stockfish.js-master/src/stockfish-16.1.js"></script>
+    <script src="/public/js/stockfish.js"></script>
     <script src="/public/js/IAscript.js"></script>
 
     <script>
-        let playerColor = 'w'; // 'w' para blancas, 'b' para negras
-        console.log('Playing as ' + (playerColor === 'w' ? 'white' : 'black'));
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal functionality
+            const modal = document.getElementById('game-options-modal');
+            const playBtn = document.getElementById('play-stockfish');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const cancelGameBtn = document.getElementById('cancel-game-btn');
+            const difficultySlider = document.getElementById('difficulty-slider');
+            const difficultyDisplay = document.getElementById('difficulty-display');
+            const colorOptions = document.getElementsByName('piece-color');
+            
+            // Open modal when play button is clicked
+            playBtn.addEventListener('click', function() {
+                modal.style.display = 'flex';
+            });
+            
+            // Update difficulty display when slider changes
+            difficultySlider.addEventListener('input', function() {
+                difficultyDisplay.textContent = this.value;
+            });
+            
+            // Start game with selected options
+            startGameBtn.addEventListener('click', function() {
+                const stockfishLevel = parseInt(difficultySlider.value);
+                
+                // Get selected color
+                let playerColor = 'w';
+                for(let option of colorOptions) {
+                    if(option.checked) {
+                        playerColor = option.value;
+                        break;
+                    }
+                }
+                
+                modal.style.display = 'none';
+                console.log('Starting game with difficulty:', stockfishLevel, 'and player color:', playerColor === 'w' ? 'white' : 'black');
+                
+                // Call function to start game with Stockfish
+                if (window.startStockfishGame) {
+                    window.startStockfishGame(playerColor, stockfishLevel);
+                } else {
+                    console.error('startStockfishGame function not found. Make sure it is defined in IAscript.js');
+                    alert('Error al iniciar el juego. Por favor, intenta nuevamente.');
+                }
+            });
+            
+            // Close modal when cancel is clicked
+            cancelGameBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -3,7 +3,7 @@ var game = new Chess();
 var $status = $('#status');
 var $fen = $('#fen');
 var $pgn = $('#pgn');
-let c_player = null;
+let c_player = 'w'; // Default player color (white)
 let timerinstance = null;
 let currentmatchtime = null;
 // Sounds
@@ -55,12 +55,12 @@ function onDrop(source, target) {
 }
 
 function updateStatus() {
-  let status = game.turn() === 'b' ? 'Black to move' : 'White to move';
+  let status = game.turn() === 'b' ? 'Mueven las negras' : 'Mueven las blancas';
   if (game.in_checkmate()) {
-    status = `Game over, ${game.turn() === 'w' ? 'Black' : 'White'} wins!`;
+    status = `Juego terminado, ${game.turn() === 'w' ? 'Negras' : 'Blancas'} ganan!`;
     endSound.play();
   } else if (game.in_draw()) {
-    status = 'Game over, drawn position';
+    status = 'Juego terminado, posición empatada!';
     endSound.play();
   }
   $status.html(status);
@@ -92,16 +92,32 @@ stockfish.onmessage = function(event) {
   }
 };
 
-document.getElementById('play-stockfish').addEventListener('click', function() {
-  let level = prompt('Enter difficulty level (0-20):', '1');
-  let color = prompt('Enter your color (white/black):', 'white');
-  c_player = color === 'white' ? 'w' : 'b';
+// New function to be called from IA.html modal
+function startStockfishGame(color, level) {
+  startSound.play();
+  c_player = color; // 'w' or 'b' from modal
   stockfish.postMessage('setoption name Skill Level value ' + level);
   game.reset();
   board.start();
-  board.orientation(color);
+  board.orientation(color === 'w' ? 'white' : 'black');
   updateStatus();
-  if (c_player === 'b') makeStockfishMove();
+  
+  // If player is black, make first move as white
+  if (c_player === 'b') {
+    setTimeout(makeStockfishMove, 500);
+  }
+  
+  // Update robot message
+  const robotMessage = document.querySelector('.robot-message p');
+  if (robotMessage) {
+    robotMessage.textContent = `¡Jugando con dificultad ${level}! ¡Buena suerte!`;
+  }
+}
+
+// Keep the old event listener for backward compatibility or remove if not needed
+document.getElementById('play-stockfish').addEventListener('click', function() {
+  // This will now be handled by the modal in IA.html
+  // The modal will call startStockfishGame() directly
 });
 
 const config = {
@@ -112,3 +128,6 @@ const config = {
 };
 board = ChessBoard('myBoard', config);
 updateStatus();
+
+// Make the function available globally so it can be called from IA.html
+window.startStockfishGame = startStockfishGame;

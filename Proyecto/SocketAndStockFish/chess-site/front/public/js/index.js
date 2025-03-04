@@ -55,36 +55,36 @@ function onSnapEnd () {
 function updateStatus () {
     var status = ''
 
-    var moveColor = 'White'
+    var moveColor = 'Blancas'
     if (game.turn() === 'b') {
-        moveColor = 'Black'
+        moveColor = 'Negras'
     }
 
     // checkmate?
     if (game.in_checkmate()) {
-        status = 'Game over, ' + moveColor + ' is in checkmate.'
+        status = 'Juego terminado, ' + moveColor + ' esta en jaque mate.'
     }
 
     // draw?
     else if (game.in_draw()) {
-        status = 'Game over, drawn position'
+        status = 'Juego terminado, empate.'
     }
 
     else if (gameOver) {
-        status = 'Opponent disconnected, you win!'
+        status = 'El jugador se desconecto, tu ganas!'
     }
 
     else if (!gameHasStarted) {
-        status = 'Waiting for black to join'
+        status = 'Esperando a que el otro jugador se una...'
     }
 
     // game still on
     else {
-        status = moveColor + ' to move'
+        status = moveColor + ' mueven'
 
         // check?
         if (game.in_check()) {
-            status += ', ' + moveColor + ' is in check'
+            status += ', ' + moveColor + ' esta en jaque'
         }
         
     }

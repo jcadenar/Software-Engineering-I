@@ -1,3 +1,41 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f5194d3396a46975a667150104ae57c47d800395b373c91528593e7e7b24abbd
-size 1139
+{
+    "name": "proyecto",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "install-all": "npm install",
+        "dev": "concurrently \"cd SocketAndStockFish/chess-site && node index.js\" \"cd front/login && vite\"",
+        "start": "npm run dev"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "@eslint/js": "^9.20.0",
+        "@types/react": "^19.0.8",
+        "@types/react-dom": "^19.0.3",
+        "@vitejs/plugin-react": "^4.3.4",
+        "concurrently": "^9.1.2",
+        "eslint": "^8.57.1",
+        "eslint-config-standard": "^17.1.0",
+        "eslint-plugin-import": "^2.25.2",
+        "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+        "eslint-plugin-promise": "^6.0.0",
+        "eslint-plugin-react": "^7.37.4",
+        "eslint-plugin-react-hooks": "^5.0.0",
+        "eslint-plugin-react-refresh": "^0.4.18",
+        "globals": "^15.14.0",
+        "vite": "^6.1.0"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.7",
+        "express": "^4.18.2",
+        "express-handlebars": "^7.0.7",
+        "firebase": "^11.4.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-router-dom": "^7.2.0",
+        "socket.io": "^4.7.0"
+    }
+}

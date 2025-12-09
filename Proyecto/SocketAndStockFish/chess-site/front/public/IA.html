@@ -4,32 +4,271 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Ajedrez</title>
+
+    <!-- Enlaces de recursos externos -->
     <link rel="stylesheet" href="/public/css/chessboard-1.0.0.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        #board-container {
+        /* Estilos generales */
+        body {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            color: #f0f0f0;
+            background: #1a1a2e;
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        /* Patrón de ajedrez minimalista */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: 
+                linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%);
+            background-size: 100px 100px;
+            background-position: 0 0, 0 50px, 50px -50px, -50px 0px;
+            pointer-events: none;
+            animation: subtleMove 60s linear infinite;
+        }
+
+        @keyframes subtleMove {
+            0% {
+                background-position: 0 0, 0 50px, 50px -50px, -50px 0px;
+            }
+            100% {
+                background-position: 100px 100px, 100px 150px, 150px 50px, 50px 100px;
+            }
+        }
+
+        /* Ajustar la opacidad del contenedor para mejor contraste */
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 1s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Contenedor del tablero */
+        #board-container {
+            flex: 3;
+            text-align: center;
+            width: 600px;
+        }
+
+        /* Contenedor de los movimientos */
+        #moves-container {
+            flex: 1;
+            max-width: 160px;
+            text-align: left;
+            margin-left: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #moves-container h2 {
+            color: #cbd5e1;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Encabezado */
+        .header {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header img {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            color: #f0f0f0;
+        }
+
+        /* Tablero de ajedrez */
+        #myBoard {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto 10px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            animation: slideIn 1s ease-in-out;
+        }
+
+        /* Estilos para el estado y PGN */
+        .info {
+            margin-top: 10px;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .info label {
+            font-weight: 700;
+        }
+
+        /* Botón */
+        button {
+            display: block;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #45a049, #388e3c);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Ajustar el mensaje del robot */
+        .robot-message {
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .robot-message:hover {
+            transform: translateY(-3px);
+        }
+
+        .robot-message img {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .robot-message p {
+            margin: 0;
+            font-size: 16px;
+            color: #f0f0f0;
+        }
+
+        /* Add these new styles to your existing style block */
+        .header-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #f0f0f0;
+            transition: transform 0.3s ease;
+        }
+
+        .header-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .header:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
     </style>
 </head>
+
 <body>
-    <div id="board-container">
-        <div id="myBoard" style="width: 600px;"></div>
-        <div id="status"></div>
-        <div id="pgn"></div>
+    <!-- Encabezado -->
+    <div class="header">
+        <a href="http://localhost:3037" class="header-link">
+            <img src="/public/Anexos/logoFinal.png" alt="Logo de la app">
+            <h1>SuperChess 64</h1>
+        </a>
     </div>
-    <button id="play-stockfish" style="display: block; margin: auto;">Jugar contra Stockfish</button>
 
-    
-    <div id="chat-box"></div>
+    <!-- Contenedor principal -->
+    <div class="container">
+        <!-- Tablero de ajedrez -->
+        <div id="board-container">
+            <div id="myBoard"></div>
+            <div id="status" class="info"></div>
+            <button id="play-stockfish">Jugar contra Stockfish</button>
+        </div>
 
+        <!-- Movimientos -->
+        <div id="moves-container">
+            <h2>Movimientos</h2>
+            <div id="pgn"></div>
+        </div>
+    </div>
+
+    <!-- Mensaje del robot -->
+    <div class="robot-message">
+        <img src="Anexos/robot.png" alt="Robot">
+        <p>¡Buena suerte!</p>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="/public/js/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="/chess-site/assets/stockfish.js-master/src/stockfish-16.1.js"></script>
     <script src="/public/js/IAscript.js"></script>
+
+    <script>
+        let playerColor = 'w'; // 'w' para blancas, 'b' para negras
+        console.log('Playing as ' + (playerColor === 'w' ? 'white' : 'black'));
+    </script>
 </body>
 </html>

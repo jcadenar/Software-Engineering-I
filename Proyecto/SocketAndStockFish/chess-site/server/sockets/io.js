@@ -1,5 +1,24 @@
 let waitingPlayer = null; // Variable para almacenar al jugador en espera
 
+// Función de ayuda: valida que un código de juego tenga 6 caracteres alfanuméricos en mayúsculas
+function isValidGameCode(code) {
+    if (typeof code !== 'string') return false;
+    return /^[A-Z0-9]{6}$/.test(code);
+}
+
+// Función de ayuda: sanitiza un mensaje de chat (tipo string, longitud acotada)
+function sanitizeChatMessage(message) {
+    if (typeof message !== 'string') {
+        message = String(message ?? '');
+    }
+    message = message.trim();
+    const MAX_LENGTH = 500;
+    if (message.length > MAX_LENGTH) {
+        message = message.slice(0, MAX_LENGTH);
+    }
+    return message;
+}
+
 module.exports = io => {
     io.on('connection', socket => {
         console.log('New socket connection');
@@ -25,7 +44,16 @@ module.exports = io => {
         });
 
         socket.on('joinGame', function(data) {
-            currentCode = data.code;
+            const code = data && data.code ? String(data.code).toUpperCase() : '';
+
+            // Validación de código de sala (RNF-01)
+            if (!isValidGameCode(code)) {
+                console.warn('joinGame rechazado por código inválido:', code);
+                socket.emit('error-joinGame', { message: 'Código de partida inválido.' });
+                return;
+            }
+
+            currentCode = code;
             socket.join(currentCode);
 
             if (!games[currentCode]) {
@@ -73,17 +101,33 @@ module.exports = io => {
             }
         });
 
-        // NUEVO: Manejo de mensajes de chat
+        // Manejo de mensajes de chat con validación y sanitización básica (RNF-01)
         socket.on('chat-message', function(data) {
-            console.log('Chat message received:', data.message);
+            const rawGameCode = data && data.gameCode ? String(data.gameCode).toUpperCase() : '';
+            const color = data && data.color ? String(data.color) : '';
+            const sanitizedMessage = sanitizeChatMessage(data && data.message);
+
+            console.log('Chat message received (sanitized):', sanitizedMessage);
             
-            // Si tenemos un código de juego válido, enviamos el mensaje a todos en esa sala excepto al remitente
-            if (data.gameCode && games[data.gameCode]) {
-                socket.to(data.gameCode).emit('chat-message', {
-                    message: data.message,
-                    color: data.color
-                });
+            // Validar código de juego y mensaje antes de reenviar
+            if (!isValidGameCode(rawGameCode) || !games[rawGameCode]) {
+                console.warn('chat-message rechazado por gameCode inválido:', rawGameCode);
+                return;
             }
+
+            if (!sanitizedMessage) {
+                // Mensaje vacío tras sanitización, no lo reenviamos
+                return;
+            }
+
+            // Validar color opcionalmente (solo white/black)
+            const allowedColors = ['white', 'black'];
+            const safeColor = allowedColors.includes(color) ? color : 'white';
+
+            socket.to(rawGameCode).emit('chat-message', {
+                message: sanitizedMessage,
+                color: safeColor
+            });
         });
     });
 };

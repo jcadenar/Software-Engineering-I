@@ -13,18 +13,17 @@ const app = express(),
       server = http.Server(app),
       io = socket(server);
 
-server.listen(config.port);
-
-
-
-
-
+// En entorno normal el servidor escucha en el puerto configurado.
+// En entorno de pruebas (NODE_ENV=test), supertest usa directamente `app`
+// y no es necesario abrir un puerto, evitando errores EADDRINUSE entre tests.
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(config.port);
+  console.log(`Server listening on port ${config.port}`);
+}
 
 games = {};
 
 myIo(io);
-
-console.log(`Server listening on port ${config.port}`);
 
 const Handlebars = handlebars.create({
   extname: '.html', 
@@ -38,3 +37,6 @@ app.set('views', path.join(__dirname, '..', 'front', 'views'));
 app.use('/public', express.static(path.join(__dirname, '..', 'front', 'public')));
 
 routes(app);
+
+// Exportamos la app de Express para poder usarla en pruebas automatizadas (supertest)
+module.exports = app;

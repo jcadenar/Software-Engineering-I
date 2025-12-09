@@ -110,9 +110,17 @@ updateStatus()
 
 var urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('code')) {
-    socket.emit('joinGame', {
-        code: urlParams.get('code')
-    });
+    const rawCode = String(urlParams.get('code')).toUpperCase();
+
+    // Validación ligera en frontend del código de sala (RNF-01)
+    const gameCodeRegex = /^[A-Z0-9]{6}$/;
+    if (!gameCodeRegex.test(rawCode)) {
+        console.warn('Código de sala inválido en frontend, no se enviará joinGame:', rawCode);
+    } else {
+        socket.emit('joinGame', {
+            code: rawCode
+        });
+    }
 }
 
 socket.on('startGame', function() {
